@@ -2,6 +2,16 @@
 
 Bare bones Promises/A+ implementation 简单的 Promises/A+ 实现
 
+## MiniPromise.js 实现
+
+- MiniPromise.resolve()
+- MiniPromise.reject()
+- MiniPromise.then()
+- MiniPromise.all()
+- MiniPromise.race()
+- MiniPromise.any()
+- MiniPromise.allSettled()
+
 ## 简单的 Promises/A+ 实现
 
 通篇讲解promise，学习promise相关内容，熟练使用promise；了解promise可以做什么，不可以做什么。
