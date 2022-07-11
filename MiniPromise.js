@@ -1,7 +1,7 @@
 // 定义常量表示三个状态
-const PENDING = 'Pending';
-const RESOLVED = 'FulFilled';
-const REJECTED = 'Rejected';
+const PENDING = 'Pending'; // 准备状态
+const RESOLVED = 'FulFilled'; //  解决状态
+const REJECTED = 'Rejected'; //   拒绝状态
 
 class MiniPromise {
  // executor 是一个执行器，进入会立即执行
@@ -33,8 +33,10 @@ class MiniPromise {
    // 保存成功之后的值
    this.value = value;
    // 成功回调函数拿出来执行
-   this.resolveCallbacks.forEach(onFulFilled => {
-    onFulFilled(this.value)
+   setTimeout(() => {
+    this.resolveCallbacks.forEach(onFulFilled => {
+     onFulFilled(this.value)
+    })
    })
   }
  }
@@ -48,12 +50,15 @@ class MiniPromise {
    // 保存失败后的原因
    this.value = value;
    // 失败回调函数拿出来执行
-   this.rejectCallbacks.forEach(onRejected => {
-    onRejected(this.value)
+   setTimeout(() => {
+    this.rejectCallbacks.forEach(onRejected => {
+     onRejected(this.value)
+    })
    })
   }
  }
 
+ // 实现.then()的链式穿透
  then(onFulFilled, onRejected) {
   onFulFilled = typeof onFulFilled === 'function' ? onFulFilled : v => v
   onRejected = typeof onRejected === 'function' ? onRejected : err => { throw err };
@@ -103,6 +108,17 @@ class MiniPromise {
    }
   })
   return promise2
+ }
+
+ // 静态resolve方法 返回一个promise对象
+ static resolve(value) {
+  if(value instanceof MiniPromise) return value;
+  return new MiniPromise(resolve => resolve(value))
+ }
+
+ // 静态reject方法 返回一个promise对象
+ static reject(value) {
+  return new MiniPromise((resolve, reject) => reject(value))
  }
 }
 
