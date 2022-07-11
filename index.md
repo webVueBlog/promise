@@ -1,5 +1,19 @@
 ## 简单的 Promises/A+ 实现
 
+博客：[webvueblog.github.io/promise/](https://webvueblog.github.io/promise/ "https://webvueblog.github.io/promise/")
+
+仓库地址：[promise](https://github.com/webVueBlog/promise)
+
+## MiniPromise.js 实现
+
+- MiniPromise.resolve()
+- MiniPromise.reject()
+- MiniPromise.then()
+- MiniPromise.all()
+- MiniPromise.race()
+- MiniPromise.any()
+- MiniPromise.allSettled()
+
 通篇讲解promise，学习promise相关内容，熟练使用promise；了解promise可以做什么，不可以做什么。
 
 promise是抽象异步处理对象以及对其进行各种操作的组件。promise最初被提出是在E语言中，它是基于并列/并行处理设计的一编程语言。
