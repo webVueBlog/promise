@@ -120,6 +120,88 @@ class MiniPromise {
  static reject(value) {
   return new MiniPromise((resolve, reject) => reject(value))
  }
+
+ // 静态all 方法 接受一个数组作为参数，返回一个promise实例对象
+ static all(list) {
+  return new MiniPromise((resolve, reject) => {
+   // 定义一个数组用于存储返回的值
+   let _value = [];
+   // 定义一个计算字段来标识返回成功状态的promise
+   let count = 0
+   for (let [i, p] of list.entries()) {
+    this.resolve(p).then(res => {
+     _value[i] = res
+     count++
+     // 当数组的长度和count值相等的时候，表示所有的都成功返回值了，那么执行成功的方法
+     if (count === list.length) resolve(_value) 
+    }, (err) => {
+     reject(err)
+    })
+   }
+  })
+ }
+
+ // 静态race 方法 接受一个数组作为参数，返回一个promise实例对象
+ static race(list) {
+  return new MiniPromise((resolve, reject) => {
+   for(let p of list) {
+    this.resolve(p).then(res => {
+     resolve(res)
+    }, err => reject(err))
+   }
+  })
+ }
+
+ // 静态finally方法
+ // 表示不管最后promise的状态如何 都会执行的操作接受一个回调函数作为参数
+ // 也是返回一个promise对象，执行promise对象的then函数
+ static finally(cb) {
+  return this.then(
+   value => MiniPromise.resolve(cb()).then(() => value),
+   reason => MiniPromise.reject(cb()).then(() => { throw reason })
+  )
+ }
+
+ // 静态方法any
+ // resolve必须等到有一个成功的结果
+ // reject所有的都失败才执行reject
+ static any(promises) {
+  const _reasons = []
+  return new MiniPromise((resolve, reject) => {
+   promises.forEach(promise => {
+    promise.then(resolve, err => {
+     _reasons.push(err)
+     if(_reasons.length === promises.length) {
+      reject(new AggregateError(_reasons))
+     }
+    }) 
+   })
+  })
+ }
+
+ // Promise.allSettled 静态方法是在所有给定的promise都已经fulfilled或rejected的promise
+ // 并带有一个对象数组，每个对象表示对应的promise结果
+ static allSettled(promises) {
+  let _result = [];
+  return new MiniPromise((resolve, reject) => {
+   promises.forEach(promise => {
+    if(_result.length === promises.length) {
+     resolve(_result);
+    }
+    promise.then(res => {
+     _result.push({
+      status: 'fulfilled',
+      value: res
+     })
+    }, err => {
+     _result.push({
+      status: 'rejected',
+      reason: err
+     })
+    })
+   })
+  })
+ }
 }
 
 function resolvePromise(x, promise2, resolve, reject) {
