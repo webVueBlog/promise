@@ -54,57 +54,87 @@ class MiniPromise {
   }
  }
 
- then(onFulFilled, onRejected){
-  if(typeof onFulFilled !== 'function') {
-   onFulFilled = () => {}
-  }
-  if(typeof onRejected !== 'function') {
-   onRejected = () => {}
-  }
-  if(this.status === PENDING) {
-   this.resolveCallbacks.push(
-    () => {
-     setTimeout(() => {
-      try {
-       onFulFilled(this.value);
-      } catch (err) {
-       onRejected(err);
-      }
-     });
-    }
-   );
-   this.rejectCallbacks.push(
-    () => {
-     setTimeout(() => {
-      try {
-       onRejected(this.value);
-      } catch (err) {
-       onRejected(err);
-      }
-     });
-    }
-   );
-  }
-  if(this.status === RESOLVED) {
-   setTimeout(() => {
-    try {
-     onFulFilled(this.value);
-    } catch (err) {
-     onRejected(err);
-    }
-   });
-  }
-  if(this.status === REJECTED) {
-   setTimeout(() => {
-    try {
-     onRejected(this.value);
-    } catch (err) {
-     onRejected(err);
-    }
-   });
-  }
- }
+ then(onFulFilled, onRejected) {
+  onFulFilled = typeof onFulFilled === 'function' ? onFulFilled : v => v
+  onRejected = typeof onRejected === 'function' ? onRejected : err => { throw err };
 
+  let promise2 = new Promise((resolve, reject) => {
+   if(this.status === PENDING) {
+    this.resolveCallbacks.push(() => {
+     setTimeout(() => {
+      try {
+       let x = onFulFilled(this.value)
+       resolvePromise(x, promise2, resolve, reject)
+      } catch (err) {
+       reject(err)
+      }
+     })
+    });
+    this.rejectCallbacks.push(() => {
+     setTimeout(() => {
+      try {
+       let x = onRejected(this.value)
+       resolvePromise(x, promise2, resolve, reject)
+      } catch (err) {
+       reject(err);
+      }
+     })
+    });
+   }
+   if(this.status === RESOLVED) {
+    setTimeout(() => {
+     try {
+      let x = onFulFilled(this.value)
+      resolvePromise(x, promise2, resolve, reject)
+     } catch (err) {
+      reject(err)
+     }
+    })
+   }
+   if(this.status === REJECTED) {
+    setTimeout(() => {
+     try {
+      let x = onRejected(this.value)
+      resolvePromise(x, promise2, resolve, reject)
+     } catch (err) {
+      reject(err)
+     }
+    })
+   }
+  })
+  return promise2
+ }
+}
+
+function resolvePromise(x, promise2, resolve, reject) {
+ if(x === promise2) {
+  return reject(new TypeError('Chaining cycle detected for promise!'))
+ }
+ if(x && (typeof x === 'object' || typeof x === 'function')) {
+  let called;
+  try {
+   let then = x.then;
+   if(typeof then === 'function') {
+    then.call(x, value => {
+     if(called) return;
+     called = true;
+     resolvePromise(value, promise2, resolve, reject)
+    }, reason => {
+     if(called) return;
+     called = true;
+     reject(reason);
+    })
+   } else {
+    resolve(x)
+   }
+  } catch (err) {
+   if(called) return;
+   called = true;
+   reject(err)
+  }
+ } else {
+  resolve(x)
+ }
 }
 
 module.exports = MiniPromise;
