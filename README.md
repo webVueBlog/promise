@@ -1,4 +1,5 @@
-# promise
+# [promise](https://webvueblog.github.io/promise/)
+
 Bare bones Promises/A+ implementation 简单的 Promises/A+ 实现
 
 ## 简单的 Promises/A+ 实现
